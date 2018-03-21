@@ -1,9 +1,14 @@
 <launch>
-  <arg name="host" default="192.168.2.140" />
+  <arg name="host" default="192.168.2.143" />
   <arg name="port" default="2111" />
   <arg name="range" default="64.0" />
+  <!-- particle_filter and mean_filter can be used at the same time -->
+  <arg name="particle_filter" default="true"/>
+  <arg name="mean_filter" default="false"/>
+  <!-- only used if mean_filter set to true -->	
+  <arg name="number_scans" default="2"/>
   <!-- first, last, all -->
-  <arg name="echoes" default="first" />
+  <arg name="echoes" default="last" />
   <!-- this affects which echo is used for the point cloud when "all" is selected above -->
   <!-- first, strongest, all -->
   <arg name="cloud_echoes" default="first" />
@@ -13,5 +18,8 @@
     <param name="range" value="$(arg range)" />
     <param name="echoes" value="$(arg echoes)" />
     <param name="cloud_echoes" value="$(arg cloud_echoes)" />
+    <param name="particle_filter" value="$(arg particle_filter)"/>
+    <param name="mean_filter" value="$(arg mean_filter)"/>
+    <param name="number_scans" value="$(arg number_scans)"/>
   </node>
 </launch>

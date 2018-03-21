@@ -61,6 +61,9 @@ int main(int argc, char **argv)
   sensor_msgs::LaserScan scan;
   double max_range;
   CoLaAEchoFilter::EchoFilter echo_mode =  CoLaAEchoFilter::FirstEcho;
+  bool particle_filter;
+  bool mean_filter;
+  int number_scans;
 
   // parameters
   std::string host;
@@ -88,6 +91,10 @@ int main(int argc, char **argv)
   n.param<std::string>("frame_id", frame_id, "laser");
   n.param<int>("port", port, 2111);
   n.param<double>("range", max_range, 64.0);
+  n.param<bool>("particle_filter", particle_filter, false);
+  n.param<bool>("mean_filter", mean_filter, false);
+  n.param<int>("number_scans", number_scans, 2);
+
 
   std::string echoes;
   n.param<std::string>("echoes", echoes, "first");
@@ -211,6 +218,12 @@ int main(int argc, char **argv)
 
     ROS_DEBUG("Setting echo configuration");
     laser.setEchoFilter(echo_mode);
+
+    ROS_DEBUG("Setting particle filter configuration");
+    laser.setParticleFilter(particle_filter);
+
+    ROS_DEBUG("Setting mean filter configuration.");
+    laser.setMeanFilter(mean_filter, number_scans);
 
     ROS_DEBUG("Setting application mode");
     laser.enableRangingApplication();
