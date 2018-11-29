@@ -32,6 +32,13 @@
 #define LMS_STX 0x02
 #define LMS_ETX 0x03
 
+#ifndef CONSOLE_BRIDGE_logDebug
+#define CONSOLE_BRIDGE_logDebug logDebug
+#endif
+#ifndef CONSOLE_BRIDGE_logWarn
+#define CONSOLE_BRIDGE_logWarn logWarn
+#endif
+
 class LMSBuffer
 {
 public:

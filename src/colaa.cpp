@@ -29,6 +29,13 @@
 #include "lms1xx/lms_buffer.h"
 #include "lms1xx/parse_helpers.h"
 
+#ifndef CONSOLE_BRIDGE_logDebug
+#define CONSOLE_BRIDGE_logDebug logDebug
+#endif
+#ifndef CONSOLE_BRIDGE_logWarn
+#define CONSOLE_BRIDGE_logWarn logWarn
+#endif
+
 constexpr uint8_t STX = 0x02; //Start transmission marker
 constexpr uint8_t ETX = 0x03; //End transmission marker
 constexpr size_t DEF_BUF_LEN = 128; // Default buffer size
