@@ -29,6 +29,13 @@
 #include "lms1xx/lms_buffer.h"
 #include "lms1xx/parse_helpers.h"
 
+#ifndef CONSOLE_BRIDGE_logDebug
+#define CONSOLE_BRIDGE_logDebug logDebug
+#endif
+#ifndef CONSOLE_BRIDGE_logWarn
+#define CONSOLE_BRIDGE_logWarn logWarn
+#endif
+
 constexpr uint8_t STX = 0x02; //Start transmission marker
 constexpr uint8_t ETX = 0x03; //End transmission marker
 constexpr size_t DEF_BUF_LEN = 128; // Default buffer size
@@ -77,7 +84,7 @@ void CoLaA::connect(std::string host, int port)
 {
   if (!connected_)
   {
-    logDebug("Creating non-blocking socket.");
+    CONSOLE_BRIDGE_logDebug("Creating non-blocking socket.");
     socket_fd_ = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket_fd_)
     {
@@ -86,13 +93,13 @@ void CoLaA::connect(std::string host, int port)
       stSockAddr.sin_port = htons(port);
       inet_pton(AF_INET, host.c_str(), &stSockAddr.sin_addr);
 
-      logDebug("Connecting socket to laser.");
+      CONSOLE_BRIDGE_logDebug("Connecting socket to laser.");
       int ret = ::connect(socket_fd_, (struct sockaddr *) &stSockAddr, sizeof(stSockAddr));
 
       if (ret == 0)
       {
         connected_ = true;
-        logDebug("Connected succeeded.");
+        CONSOLE_BRIDGE_logDebug("Connected succeeded.");
       }
     }
   }
@@ -271,9 +278,9 @@ bool CoLaA::getScanData(void *scan_data)
     tv.tv_sec = 0;
     tv.tv_usec = 100000;
 
-    logDebug("entering select()", tv.tv_usec);
+    CONSOLE_BRIDGE_logDebug("entering select()", tv.tv_usec);
     int retval = select(socket_fd_ + 1, &rfds, NULL, NULL, &tv);
-    logDebug("returned %d from select()", retval);
+    CONSOLE_BRIDGE_logDebug("returned %d from select()", retval);
     if (retval)
     {
       buffer_->readFrom(socket_fd_);
@@ -337,12 +344,12 @@ std::string CoLaA::buildScanCfg(const ScanConfig &cfg) const
 {
   if (cfg.num_sectors > 1)
   {
-    logWarn("This method does not support configuring multiple sectors");
+    CONSOLE_BRIDGE_logWarn("This method does not support configuring multiple sectors");
   }
   std::stringstream ss;
   ss << std::uppercase << std::hex << cfg.scan_frequency << " +" << std::dec << std::min(cfg.num_sectors, (int16_t)1) << " "
      << std::hex << cfg.angualar_resolution << " " << cfg.start_angle << " " << cfg.stop_angle;
-  logDebug("TX: %s", ss.str().c_str());
+  CONSOLE_BRIDGE_logDebug("TX: %s", ss.str().c_str());
   return ss.str();
 }
 
@@ -430,7 +437,7 @@ void CoLaA::parseScanDataEncoderdata(char **buf) const
 {
    uint16_t num_encoders = 0;
    nextToken(buf, num_encoders);
-   logDebug("Got %ud encoders", num_encoders);
+   CONSOLE_BRIDGE_logDebug("Got %ud encoders", num_encoders);
    for (uint16_t i = 0; i < num_encoders; ++ i)
    {
      uint32_t encoder_position = 0;
@@ -449,19 +456,19 @@ void CoLaA::sendCommand(const char *command) const
 {
   ssize_t written = write(socket_fd_, &STX, 1);
   if (written != 1)
-    logWarn("Error");
+    CONSOLE_BRIDGE_logWarn("Error");
   written = write(socket_fd_, command, strlen(command));
   if (written < 0 || static_cast<size_t>(written) != strlen(command))
-    logWarn("Error");
+    CONSOLE_BRIDGE_logWarn("Error");
   written = write(socket_fd_, &ETX, 1);
   if (written != 1)
-    logWarn("Error");
+    CONSOLE_BRIDGE_logWarn("Error");
 }
 
 bool CoLaA::readBack(char *buf, size_t &buflen)
 {
   if (!buf) {
-    logDebug("No buffer supplied");
+    CONSOLE_BRIDGE_logDebug("No buffer supplied");
     return false;
   }
   ssize_t len = read(socket_fd_, buf, buflen);
@@ -470,12 +477,12 @@ bool CoLaA::readBack(char *buf, size_t &buflen)
   {
     // This is an error message
     CoLaASopasError::SopasError err = CoLaASopasError::parseError(&buf[5], len == 8);
-    logWarn("Received error code %d", err);
+    CONSOLE_BRIDGE_logWarn("Received error code %d", err);
   }
   if (!success)
-    logWarn("invalid packet recieved");
+    CONSOLE_BRIDGE_logWarn("invalid packet recieved");
   buf[len > 0 ? len : 0] = 0;
-  logDebug("RX: %s", buf);
+  CONSOLE_BRIDGE_logDebug("RX: %s", buf);
   if (len >= 0)
     buflen = static_cast<size_t>(len);
   else
